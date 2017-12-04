@@ -3,25 +3,24 @@
 
 namespace vespalib::metrics {
 
-const std::chrono::seconds oneSec{1};
-
 TimeStamp
 MockTick::next(TimeStamp prev)
 {
     std::unique_lock<std::mutex> locker(_lock);
     _prevValue = prev;
-    while (_runFlag) {
-        if (_provided) {
-            _blocked.store(false);
-            _provided.store(false);
-            return _nextValue;
-        }
-        _blocked.store(true);
-        _blockedCond.notify_all();
-        auto r = _providedCond.wait_for(locker, oneSec);
-        (void)r;
+    _blocked.store(true);
+    _blockedCond.notify_all();
+    while (_runFlag && !_provided) {
+        _providedCond.wait(locker);
     }
-    return TimeStamp(0);
+    _blocked.store(false);
+    if (_provided) {
+        _provided.store(false);
+        return _nextValue;
+    } else {
+        // killed
+        return TimeStamp(0);
+    }
 }
 
 void
@@ -47,14 +46,15 @@ TimeStamp
 MockTick::waitUntilBlocked()
 {
     std::unique_lock<std::mutex> locker(_lock);
-    while (_runFlag) {
-        if (_blocked) {
-            return _prevValue;
-        }
-        auto r = _blockedCond.wait_for(locker, oneSec);
-        (void)r;
+    while (_runFlag && !_blocked) {
+        _blockedCond.wait(locker);
     }
-    return TimeStamp(0);
+    if (_blocked) {
+        return _prevValue;
+    } else {
+        // killed
+        return TimeStamp(0);
+    }
 }
 
 MockTick::MockTick()
