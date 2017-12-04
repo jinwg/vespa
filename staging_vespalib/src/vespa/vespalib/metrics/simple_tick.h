@@ -18,6 +18,7 @@ public:
     SimpleTick();
     TimeStamp next(TimeStamp prev) override;
     void kill() override;
+    bool alive() override;
 };
 
 } // namespace vespalib::metrics

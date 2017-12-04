@@ -32,6 +32,13 @@ MockTick::kill()
     _providedCond.notify_all();
 }
 
+bool
+MockTick::alive()
+{
+    std::unique_lock<std::mutex> locker(_lock);
+    return _runFlag;
+}
+
 void
 MockTick::provide(TimeStamp value)
 {

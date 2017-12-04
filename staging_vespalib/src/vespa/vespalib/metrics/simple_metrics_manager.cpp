@@ -25,7 +25,6 @@ SimpleMetricsManager::SimpleMetricsManager(const SimpleManagerConfig &config,
       _firstBucket(0),
       _maxBuckets(config.sliding_window_seconds),
       _totalsBucket(0, _startTime, _startTime),
-      _runFlag(true),
       _thread(&SimpleMetricsManager::tickerLoop, this)
 {
     if (_maxBuckets < 1) _maxBuckets = 1;
@@ -198,16 +197,17 @@ SimpleMetricsManager::pointFrom(PointMap::BackingMap map)
 void
 SimpleMetricsManager::tickerLoop()
 {
-    while (_runFlag) {
+    while (_tickSupplier->alive()) {
         TimeStamp now = _tickSupplier->next(_curTime);
-        tick(now);
+        if (_tickSupplier->alive()) {
+            tick(now);
+        }
     }
 }
 
 void
 SimpleMetricsManager::stopThread()
 {
-    _runFlag.store(false);
     _tickSupplier->kill();
     _thread.join();
 }

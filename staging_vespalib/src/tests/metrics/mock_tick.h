@@ -23,6 +23,7 @@ public:
     MockTick();
     TimeStamp next(TimeStamp prev) override;
     void kill() override;
+    bool alive() override;
 
     void provide(TimeStamp value);
     TimeStamp waitUntilBlocked();
@@ -33,6 +34,7 @@ struct TickProxy : Tick {
     TickProxy(std::shared_ptr<Tick> tick_in) : tick(std::move(tick_in)) {}
     TimeStamp next(TimeStamp prev) override { return tick->next(prev); }
     void kill() override { tick->kill(); }
+    bool alive() override { return tick->alive(); }
 };
 
 } // namespace vespalib::metrics
