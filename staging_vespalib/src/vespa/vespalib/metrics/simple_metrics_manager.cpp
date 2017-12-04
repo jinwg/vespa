@@ -35,7 +35,6 @@ SimpleMetricsManager::SimpleMetricsManager(const SimpleManagerConfig &config,
 
 SimpleMetricsManager::~SimpleMetricsManager()
 {
-    _tickSupplier->kill();
     stopThread();
 }
 
@@ -209,6 +208,7 @@ void
 SimpleMetricsManager::stopThread()
 {
     _runFlag.store(false);
+    _tickSupplier->kill();
     _thread.join();
 }
 
