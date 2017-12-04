@@ -9,6 +9,7 @@
 
 namespace vespalib::metrics {
 
+// internal
 class SimpleTick : public Tick {
 private:
     std::mutex _lock;
