@@ -8,14 +8,14 @@ MockTick::next(TimeStamp prev)
 {
     std::unique_lock<std::mutex> locker(_lock);
     _prevValue = prev;
-    _blocked.store(true);
+    _blocked = true;
     _blockedCond.notify_all();
     while (_runFlag && !_provided) {
         _providedCond.wait(locker);
     }
-    _blocked.store(false);
+    _blocked = false;
     if (_provided) {
-        _provided.store(false);
+        _provided = false;
         return _nextValue;
     } else {
         // killed
@@ -27,7 +27,7 @@ void
 MockTick::kill()
 {
     std::unique_lock<std::mutex> locker(_lock);
-    _runFlag.store(false);
+    _runFlag = false;
     _blockedCond.notify_all();
     _providedCond.notify_all();
 }
@@ -37,8 +37,8 @@ MockTick::provide(TimeStamp value)
 {
     std::unique_lock<std::mutex> locker(_lock);
     _nextValue = value;
-    _blocked.store(false);
-    _provided.store(true);
+    _blocked = false;
+    _provided = true;
     _providedCond.notify_all();
 }
 

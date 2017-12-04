@@ -12,9 +12,9 @@ namespace vespalib::metrics {
 class MockTick : public Tick {
 private:
     std::mutex _lock;
-    std::atomic<bool> _runFlag;
-    std::atomic<bool> _provided;
-    std::atomic<bool> _blocked;
+    bool _runFlag;
+    bool _provided;
+    bool _blocked;
     std::condition_variable _providedCond;
     std::condition_variable _blockedCond;
     TimeStamp _nextValue;
